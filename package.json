@@ -1,0 +1,22 @@
+{
+  "name": "wx-acpx",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "bun test",
+    "dev:local": "bun scripts/local/dev-local.ts",
+    "build": "bun build ./index.ts --compile --outfile wx-acpx"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/qrcode-terminal": "^0.12.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "acpx": "^0.3.1",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
