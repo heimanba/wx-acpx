@@ -51,6 +51,68 @@ jobs:
       - name: Compile binary
         run: bun build ./index.ts --compile --outfile ${{ matrix.outfile }}
 
+      - name: Show build output (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Built file:"
+          ls -lah "${{ matrix.outfile }}"
+          if command -v file >/dev/null 2>&1; then
+            file "${{ matrix.outfile }}" || true
+          fi
+          if command -v shasum >/dev/null 2>&1; then
+            shasum -a 256 "${{ matrix.outfile }}"
+          else
+            sha256sum "${{ matrix.outfile }}"
+          fi
+          {
+            echo "## ${{ matrix.artifact }} 构建产物"
+            echo ""
+            echo "- 文件名：\`${{ matrix.outfile }}\`"
+            echo "- 详情："
+            echo ""
+            echo "\`\`\`"
+            ls -lah "${{ matrix.outfile }}"
+            echo "\`\`\`"
+            echo ""
+            echo "- SHA256："
+            echo ""
+            echo "\`\`\`"
+            if command -v shasum >/dev/null 2>&1; then
+              shasum -a 256 "${{ matrix.outfile }}"
+            else
+              sha256sum "${{ matrix.outfile }}"
+            fi
+            echo "\`\`\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show build output (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Built file:"
+          Get-Item "${{ matrix.outfile }}" | Format-List *
+          $hash = Get-FileHash -Algorithm SHA256 "${{ matrix.outfile }}"
+          $hash | Format-List *
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## ${{ matrix.artifact }} 构建产物"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- 文件名：`${{ matrix.outfile }}`"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- 详情："
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ((Get-Item "${{ matrix.outfile }}" | Format-List * | Out-String).TrimEnd())
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- SHA256："
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value (($hash.Algorithm + " (" + $hash.Path + ") = " + $hash.Hash).TrimEnd())
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+
       - name: Post-build notes (macOS)
         if: matrix.os == 'macos-latest'
         run: |
@@ -87,11 +149,31 @@ jobs:
           path: release-assets
           merge-multiple: true
 
+      - name: Show release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Release assets directory:"
+          ls -lah release-assets
+          echo ""
+          echo "SHA256 checksums:"
+          (cd release-assets && (shasum -a 256 * 2>/dev/null || sha256sum *))
+          {
+            echo "## Release 资产（上传前）"
+            echo ""
+            echo "\`\`\`"
+            ls -lah release-assets
+            echo "\`\`\`"
+            echo ""
+            echo "\`\`\`"
+            (cd release-assets && (shasum -a 256 * 2>/dev/null || sha256sum *))
+            echo "\`\`\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            release-assets/wx-acpx-linux-x64
-            release-assets/wx-acpx-darwin-arm64
-            release-assets/wx-acpx-windows-x64.exe
+            release-assets/*
