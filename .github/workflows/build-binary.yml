@@ -102,15 +102,15 @@ jobs:
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- 详情："
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ((Get-Item "${{ matrix.outfile }}" | Format-List * | Out-String).TrimEnd())
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- SHA256："
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value (($hash.Algorithm + " (" + $hash.Path + ") = " + $hash.Hash).TrimEnd())
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
 
       - name: Post-build notes (macOS)
