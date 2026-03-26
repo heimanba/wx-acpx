@@ -51,6 +51,23 @@ jobs:
       - name: Compile binary
         run: bun build ./index.ts --compile --outfile ${{ matrix.outfile }}
 
+      - name: Post-build notes (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cat <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          ## macOS 打不开 / 提示「已损坏」？
+
+          从 GitHub Release 用浏览器（例如 Chrome）下载的未签名二进制，可能会被 macOS 打上隔离标记（`com.apple.quarantine`），导致提示「已损坏」或无法打开。
+
+          解决：在终端执行（把路径替换成你的实际文件）：
+
+          ```bash
+          xattr -d com.apple.quarantine /path/to/wx-acpx-darwin-arm64
+          # 或递归清除扩展属性：
+          # xattr -cr /path/to/wx-acpx-darwin-arm64
+          ```
+          EOF
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

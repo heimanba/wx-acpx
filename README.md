@@ -80,6 +80,30 @@ WX_ACP_CWD_ROOT="$HOME/work" bun run index.ts
 
 ## 常见问题
 
+### macOS：Release 预编译二进制提示「已损坏」或无法打开？
+
+CI 发布的二进制未做 Apple 代码签名。用 **Chrome 等浏览器下载** 时，系统可能打上隔离标记，误报「已损坏」。
+
+**优先用终端下载**（多数情况下不会带隔离标记；将 `VERSION` 换成 Release 标签）：
+
+```bash
+VERSION=v0.0.1
+curl -fL -o wx-acpx-darwin-arm64 \
+  "https://github.com/heimanba/wx-acpx/releases/download/${VERSION}/wx-acpx-darwin-arm64"
+chmod +x wx-acpx-darwin-arm64
+./wx-acpx-darwin-arm64
+```
+
+若已下载到本机，可去掉隔离后再运行：
+
+```bash
+xattr -d com.apple.quarantine /path/to/wx-acpx-darwin-arm64
+# 若提示无该属性，可递归清除扩展属性：
+# xattr -cr /path/to/wx-acpx-darwin-arm64
+```
+
+同一 Release 还提供：`wx-acpx-linux-x64`、`wx-acpx-windows-x64.exe`（Windows）。
+
 ### 收不到消息或程序卡住？
 
 - 确认终端里显示了 `Bot is running. Press Ctrl+C to stop.`（入口在 `index.ts`）
